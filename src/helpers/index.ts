@@ -130,13 +130,14 @@ export const sendEmail = async ({ to, subject, text }: { to: string; subject: st
 	});
 };
 
-export const verifyOtpAndResetPassword = async ({ email, code, newPassword }: { email: string; code: string; newPassword: string }) => {
-	const otpEntry = await OTPModel.findOne({ email });
-
-	if (!otpEntry) throw new Error('No OTP found for this email');
-	if (otpEntry.code !== code) throw new Error('Invalid code');
+export const verifyOtp = async ({ email, code }: { email: string; code: string }) => {
+	const otpEntry = await OTPModel.findOne({ email, code });
+	if (!otpEntry) throw new Error('OTP Invalid');
 	if (otpEntry.expiresAt < new Date()) throw new Error('OTP expired');
+};
 
+export const verifyOtpAndResetPassword = async ({ email, newPassword, code }: { email: string; code: string; newPassword: string }) => {
+	await verifyOtp({ email, code });
 	const salt = await genSalt(10);
 	const hashedPassword = await hash(newPassword, salt);
 

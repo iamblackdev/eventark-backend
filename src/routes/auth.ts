@@ -2,7 +2,8 @@ import { Request, Router } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import auth from '../middleware/auth';
-import { generateOtpCode, validateCreateUserPayLoad, validateUpdateUserPayLoad, verifyOtpAndResetPassword } from '../helpers';
+import { generateOtpCode, validateCreateUserPayLoad, validateUpdateUserPayLoad, verifyOtp, verifyOtpAndResetPassword } from '../helpers';
+import dayjs from 'dayjs';
 
 const router = Router();
 
@@ -79,7 +80,44 @@ router.patch('/update', auth, async (req: Request, res: any) => {
 	}
 });
 
-// reset passsword
+// send email verification code
+router.get('/resend-mail-otp', auth, async (req: Request, res: any) => {
+	const email = req.user?.email;
+
+	const user = await User.findOne({ email });
+	if (!user) return res.status(404).json({ message: 'User not found' });
+	if (user?.email_verified) return res.status(404).json({ message: 'Email alredy verified' });
+
+	await generateOtpCode(email!);
+	res.json({ message: 'OTP sent to email' });
+});
+
+// verify email
+router.post('/verify-email', auth, async (req: Request, res: any) => {
+	const email = req.user?.email;
+	const code = req.body?.otp;
+
+	if (!code) throw new Error('OTP Required');
+	if (code.length !== 6) throw new Error('Invalid OTP');
+	try {
+		let user = await User.findOne({ email });
+		if (!user) return res.status(404).json({ message: 'User not found' });
+
+		await verifyOtp({ code, email: email! });
+
+		user.email_verified = true;
+		user.email_verified_at = dayjs().toDate();
+
+		await user.save();
+
+		user = await User.findOne({ email });
+		res.json({ message: 'Email Verified', data: user });
+	} catch (err: any) {
+		res.status(400).json({ message: err.message });
+	}
+});
+
+// request reset passsword
 router.post('/request-password-reset', async (req: Request, res: any) => {
 	const email = req.body?.email;
 
@@ -92,6 +130,7 @@ router.post('/request-password-reset', async (req: Request, res: any) => {
 	res.json({ message: 'OTP sent to email' });
 });
 
+// reset passsword
 router.post('/reset-password', async (req, res) => {
 	const { email, code, password } = req.body;
 	try {
