@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { EventType } from '../types';
 import toJSONPlugin from '../plugins/toJson';
-import { handleEventCascadeDelete, unlinkFromEvent } from '../helpers';
+import { handleEventCascadeDelete } from '../helpers';
 
 const AnonymousMessageSchema = new Schema(
 	{

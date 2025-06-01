@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import { Request, Router } from 'express';
 import Joi from 'joi';
-import { numberWithCommas } from '../helpers';
+import { numberWithCommas, sendEmail } from '../helpers';
 import Event, { WishListModel } from '../models/Event';
 import mongoose from 'mongoose';
 import dayjs from 'dayjs';
@@ -11,6 +11,7 @@ import axios from 'axios';
 import { ReceivedTransactionModel, WithdrawTransactionModel } from '../models/Transactions';
 import { NotificationModel } from '../models/Notification';
 import auth from '../middleware/auth';
+import User from '../models/User';
 
 const router = Router();
 
@@ -139,6 +140,7 @@ const processSuccessfulPayment = async (reference: string, metadata: any, rawDat
 	const existing = await ReceivedTransactionModel.findOne({ reference });
 	if (!existing || existing.status === 'success') return;
 
+	// uspate trasaction
 	await ReceivedTransactionModel.findOneAndUpdate({ reference }, { status: 'success', metadata: rawData || metadata });
 
 	if (metadata.itemId) {
@@ -148,17 +150,35 @@ const processSuccessfulPayment = async (reference: string, metadata: any, rawDat
 			amount: metadata.amount,
 		});
 
+		// get user
+		const user = await User.findOne({ _id: wish?.userId });
+
+		// create notification
 		await NotificationModel.create({
 			eventId: wish?.eventId,
 			userId: wish?.userId,
 			message: `${metadata?.name} has just contributed ${numberWithCommas(metadata.amount)} for ${metadata.title}`,
 		});
 
+		// send email notification
+		sendEmail({
+			to: user?.email || '',
+			subject: `${metadata.title} - New Contribution`,
+			text: `${metadata?.name} has just contributed ₦${numberWithCommas(metadata.amount)} for ${metadata.title}`,
+		});
+
+		// check if item contirbution is 100%
 		if (Number(wish?.total_contributions || 0) >= Number(wish?.total || 0)) {
 			await NotificationModel.create({
 				eventId: wish?.eventId,
 				userId: wish?.userId,
 				message: `Contributions for ‘${wish?.product_title}’ is 100% Complete.`,
+			});
+
+			sendEmail({
+				to: user?.email || '',
+				subject: `${metadata.title} - 100% Complete`,
+				text: `Contributions for ‘${wish?.product_title}’ is 100% Complete.`,
 			});
 		}
 	}
@@ -168,7 +188,15 @@ const processSuccessfulPayment = async (reference: string, metadata: any, rawDat
 		await NotificationModel.create({
 			eventId: updatedEvent?.id,
 			userId: updatedEvent?.userId,
-			message: `${metadata?.name} has just tipped you ${numberWithCommas(metadata.amount)} for ${metadata.title}`,
+			message: `${metadata?.name} has just tipped you ₦${numberWithCommas(metadata.amount)} for ${metadata.title}`,
+		});
+
+		const user = await User.findOne({ _id: updatedEvent?.userId });
+
+		sendEmail({
+			to: user?.email || '',
+			subject: `${metadata.title} - New Tip`,
+			text: `${metadata?.name} has just tipped you ₦${numberWithCommas(metadata.amount)} for ${metadata.title}`,
 		});
 	}
 };

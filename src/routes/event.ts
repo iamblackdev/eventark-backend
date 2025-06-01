@@ -190,6 +190,27 @@ router.post('/:eventId/message', auth, async (req: Request, res: any) => {
 	}
 });
 
+// delete event
+router.delete('/:eventId', auth, async (req: Request, res: any) => {
+	const messageId = req.params.eventId;
+
+	const session = await mongoose.startSession();
+	try {
+		session.startTransaction();
+
+		await Event.findOneAndDelete({ _id: messageId, userId: req.user?.id }).session(session);
+
+		await session.commitTransaction();
+
+		return res?.json({ message: 'Event Deleted' });
+	} catch (err) {
+		await session.abortTransaction();
+		throw err;
+	} finally {
+		session.endSession();
+	}
+});
+
 // delete anonymous message
 router.delete('/message/:messageId', auth, async (req: Request, res: any) => {
 	const messageId = req.params.messageId;
