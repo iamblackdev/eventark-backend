@@ -18,6 +18,8 @@ router.post('/register', async (req: Request, res: any) => {
 	user = new User(req.body);
 	await user.save();
 
+	await generateOtpCode(req.body.email!);
+
 	user = await User.findOne({ email: req.body.email });
 
 	const token = jwt.sign({ email: req.body.email, id: user?._id }, process.env.JWT_SECRET!);
