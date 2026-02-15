@@ -17,7 +17,6 @@ passport.use(
 				name: profile.displayName,
 			};
 
-			// Call done with the user object
 			done(null, user);
 		},
 	),
