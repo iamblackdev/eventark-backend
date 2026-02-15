@@ -4,8 +4,66 @@ import User from '../models/User';
 import auth from '../middleware/auth';
 import { generateOtpCode, validateCreateUserPayLoad, validateUpdateUserPayLoad, verifyOtp, verifyOtpAndResetPassword } from '../helpers';
 import dayjs from 'dayjs';
+import passport from '../config/passportConfig';
 
 const router = Router();
+
+// Google OAuth initiation
+router.get(
+	'/google',
+	passport.authenticate('google', {
+		scope: ['profile', 'email'],
+	}),
+);
+
+// Google OAuth callback
+router.get(
+	'/redirect/google',
+	passport.authenticate('google', {
+		failureRedirect: 'http://localhost:3000/dashboard/login',
+	}),
+	async (req: any, res: any) => {
+		try {
+			// Get user info from Google profile
+			const googleUser = req.user;
+
+			// Check if user exists in database
+			let user = await User.findOne({ email: googleUser.email });
+
+			// If user doesn't exist, create new user
+			if (!user) {
+				user = new User({
+					email: googleUser.email,
+					name: googleUser.name,
+					googleId: googleUser.googleId,
+					email_verified: true,
+					email_verified_at: dayjs().toDate(),
+				});
+				await user.save();
+			} else {
+				// If user exists but doesn't have googleId, update it
+				if (!user.googleId) {
+					user.googleId = googleUser.googleId;
+					await user.save();
+				}
+			}
+
+			// Generate JWT token
+			const token = jwt.sign(
+				{ email: user.email, id: user._id },
+				process.env.JWT_SECRET!,
+				{ expiresIn: '7d' }, // Optional: add expiration
+			);
+
+			// Redirect to frontend with token
+			// Option 1: Redirect with token in URL (for frontend to capture)
+			res.redirect(`http://localhost:3000/app?token=${token}`);
+		} catch (error) {
+			console.error('Google auth error:', error);
+			res.redirect('http://localhost:3000/login?error=auth_failed');
+		}
+	},
+);
 
 // Register
 router.post('/register', async (req: Request, res: any) => {
@@ -22,7 +80,7 @@ router.post('/register', async (req: Request, res: any) => {
 
 	user = await User.findOne({ email: req.body.email });
 
-	const token = jwt.sign({ email: req.body.email, id: user?._id }, process.env.JWT_SECRET!);
+	const token = jwt.sign({ email: req.body.email, id: user?._id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
 	res.json({ data: { token, user } });
 });
 

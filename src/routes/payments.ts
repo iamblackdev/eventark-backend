@@ -70,7 +70,7 @@ router.post('/pay', async (req: Request, res: any) => {
 					Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
 					'Content-Type': 'application/json',
 				},
-			}
+			},
 		);
 
 		trxObject['reference'] = response.data.data?.reference;
@@ -99,7 +99,7 @@ router.get('/pay/verify/:reference', async (req: Request, res: any) => {
 
 	if (data.data.status !== 'success') return res.status(400).json({ message: 'Payment not successful yet', status: existing.status });
 
-	await processSuccessfulPayment(reference, data.data.metadata, data.data);
+	await processSuccessfulPayment(reference as string, data.data.metadata, data.data);
 	return res.status(200).json({ data: { message: 'Transaction verified and processed', status: existing.status } });
 });
 
@@ -214,7 +214,7 @@ const addContributor = async ({ wishListItemId, name, amount }: { wishListItemId
 			$push: { contributors: contributor },
 			$inc: { total_contributions: amount },
 		},
-		{ new: true }
+		{ new: true },
 	);
 };
 

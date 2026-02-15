@@ -7,6 +7,7 @@ const UserSchema = new Schema<UserSchemaType>(
 	{
 		email: { type: String, required: true },
 		first_name: { type: String, required: true },
+		googleId: { type: String },
 		last_name: { type: String, required: true },
 		name: { type: String },
 		password: { type: String, required: true, select: false },
@@ -21,7 +22,7 @@ const UserSchema = new Schema<UserSchemaType>(
 	},
 	{
 		timestamps: true,
-	}
+	},
 );
 
 const OtpCodeSchema = new Schema(
@@ -30,7 +31,7 @@ const OtpCodeSchema = new Schema(
 		code: { type: String, required: true },
 		expiresAt: { type: Date, required: true },
 	},
-	{ timestamps: true }
+	{ timestamps: true },
 );
 
 UserSchema.pre('save', function (next) {

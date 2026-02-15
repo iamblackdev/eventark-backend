@@ -1,6 +1,6 @@
 export interface userPayloadType {
 	email: string;
-	password: string;
+	password?: string;
 	first_name: string;
 	last_name: string;
 }
@@ -9,6 +9,7 @@ export interface UserSchemaType extends userPayloadType {
 	name?: string;
 	email_verified: boolean;
 	email_verified_at: Date;
+	googleId: string;
 	gender: string;
 	dob: Date;
 	passwordReset: any;
