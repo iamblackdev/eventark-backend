@@ -98,7 +98,7 @@ router.post('/', auth, upload.any(), async (req: Request, res: any) => {
 					wish_list: wishlists.map((w) => w._id),
 				},
 			},
-			{ new: true }
+			{ new: true },
 		)
 			.select('-userId')
 			.populate('wish_list', '-userId')
@@ -119,7 +119,7 @@ router.post('/', auth, upload.any(), async (req: Request, res: any) => {
 // add guest to party
 router.post('/party/:partyId/guest', auth, async (req: Request, res: any) => {
 	const partyid = req.params.partyId;
-	const isObjectId = mongoose.Types.ObjectId.isValid(partyid);
+	const isObjectId = mongoose.Types.ObjectId.isValid(partyid as string);
 
 	if (!isObjectId) return res.status(400).json({ message: 'Party Invalid' });
 
@@ -138,7 +138,7 @@ router.post('/party/:partyId/guest', auth, async (req: Request, res: any) => {
 				},
 			},
 		},
-		{ new: true }
+		{ new: true },
 	);
 	return res.status(200).json({ message: "You've been added to the guest list" });
 });
@@ -152,7 +152,7 @@ router.post('/:eventId/message', auth, async (req: Request, res: any) => {
 
 	try {
 		const eventid = req.params.eventId;
-		const isObjectId = mongoose.Types.ObjectId.isValid(eventid);
+		const isObjectId = mongoose.Types.ObjectId.isValid(eventid as string);
 
 		if (!isObjectId) return res.status(400).json({ message: 'Invalid event' });
 
@@ -257,7 +257,7 @@ router.get('/id/:id', auth, async (req: Request, res: any) => {
 	const identifier = req.params.id;
 
 	// Check if it's a valid MongoDB ObjectId
-	const isValidObjectId = mongoose.Types.ObjectId.isValid(identifier);
+	const isValidObjectId = mongoose.Types.ObjectId.isValid(identifier as string);
 
 	if (!isValidObjectId) return res.status(404).json({ message: 'Event not found' });
 
