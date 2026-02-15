@@ -44,5 +44,8 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
+  "engines": {
+  "node": "18.x"
+},
   "packageManager": "yarn@3.8.5+sha256.6fd0fd785cdf2b18a9a9e2589726a11530ff018d193f8eda64be485a080f75b9"
 }
