@@ -70,7 +70,7 @@ UserSchema.pre('findOneAndUpdate', async function (next) {
 UserSchema.pre('save', async function (next) {
 	if (!this.isModified('password')) return next();
 	const salt = await genSalt(10);
-	this.password = await hash(this.password, salt);
+	this.password = await hash(this.password as string, salt);
 	next();
 });
 

@@ -1,5 +1,5 @@
 import GoogleStrategy from 'passport-google-oidc';
-import passport from 'passport';
+import passport, { DoneCallback, Profile } from 'passport';
 
 passport.use(
 	'google',
@@ -10,8 +10,7 @@ passport.use(
 			callbackURL: 'http://localhost:4000/api/auth/redirect/google',
 			scope: ['profile', 'email'],
 		},
-		(issuer, profile, done) => {
-			// You MUST call done() - this is critical!
+		(issuer: string, profile: Profile, done: (arg0: null, arg1: { googleId: string; email: string | undefined; name: string }) => void) => {
 			const user = {
 				googleId: profile.id,
 				email: profile.emails?.[0]?.value,
