@@ -17,7 +17,7 @@ router.get(
 );
 
 // Google OAuth callback
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:33000';
 
 router.get(
 	'/redirect/google',
