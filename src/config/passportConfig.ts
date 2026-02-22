@@ -1,5 +1,7 @@
 import GoogleStrategy from 'passport-google-oidc';
-import passport, { DoneCallback, Profile } from 'passport';
+import passport, { Profile } from 'passport';
+
+const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || '4000'}`;
 
 passport.use(
 	'google',
@@ -7,7 +9,7 @@ passport.use(
 		{
 			clientID: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-			callbackURL: 'http://localhost:4000/api/auth/redirect/google',
+			callbackURL: `${BACKEND_URL}/api/auth/redirect/google`,
 			scope: ['profile', 'email'],
 		},
 		(issuer: string, profile: Profile, done: (arg0: null, arg1: { googleId: string; email: string | undefined; name: string }) => void) => {
