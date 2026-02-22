@@ -3,6 +3,8 @@ import passport, { Profile } from 'passport';
 
 const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || '4000'}`;
 
+console.log('====backend', BACKEND_URL);
+
 passport.use(
 	'google',
 	new GoogleStrategy(
