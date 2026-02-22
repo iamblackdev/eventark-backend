@@ -5,6 +5,7 @@ import auth from '../middleware/auth';
 import { generateOtpCode, validateCreateUserPayLoad, validateUpdateUserPayLoad, verifyOtp, verifyOtpAndResetPassword } from '../helpers';
 import dayjs from 'dayjs';
 import passport from '../config/passportConfig';
+import crypto from 'crypto';
 
 const router = Router();
 
@@ -32,10 +33,13 @@ router.get(
 			let user = await User.findOne({ email: googleUser.email });
 
 			if (!user) {
+				const randomPassword = crypto.randomBytes(32).toString('hex');
 				user = new User({
 					email: googleUser.email,
-					name: googleUser.name,
+					first_name: googleUser.firstName,
+					last_name: googleUser.lastName,
 					googleId: googleUser.googleId,
+					password: randomPassword,
 					email_verified: true,
 					email_verified_at: dayjs().toDate(),
 				});

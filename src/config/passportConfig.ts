@@ -12,11 +12,16 @@ passport.use(
 			callbackURL: `${BACKEND_URL}/api/auth/redirect/google`,
 			scope: ['profile', 'email'],
 		},
-		(issuer: string, profile: Profile, done: (arg0: null, arg1: { googleId: string; email: string | undefined; name: string }) => void) => {
+		(
+			issuer: string,
+			profile: Profile,
+			done: (arg0: null, arg1: { googleId: string; email: string | undefined; lastName: string | undefined; firstName: string | undefined }) => void,
+		) => {
 			const user = {
 				googleId: profile.id,
 				email: profile.emails?.[0]?.value,
-				name: profile.displayName,
+				lastName: profile.name?.familyName,
+				firstName: profile.name?.givenName,
 			};
 
 			done(null, user);
