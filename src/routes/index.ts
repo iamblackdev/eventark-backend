@@ -35,12 +35,6 @@ export default function (app: Express) {
 		res.send('Hello from Node API Server Updated');
 	});
 
-	app.use('/api/auth', (req, res, next) => {
-		// Remove restrictive headers for OAuth flow
-		res.removeHeader('Referrer-Policy');
-		res.removeHeader('X-Frame-Options');
-		next();
-	});
 	app.use('/api/auth', authRoutes);
 	app.use('/api/event', eventRoutes);
 	app.use('/api', payments);
