@@ -17,20 +17,19 @@ router.get(
 );
 
 // Google OAuth callback
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
 router.get(
 	'/redirect/google',
 	passport.authenticate('google', {
-		failureRedirect: 'http://localhost:3000/dashboard/login',
+		failureRedirect: `${FRONTEND_URL}/dashboard/login`,
 	}),
 	async (req: any, res: any) => {
 		try {
-			// Get user info from Google profile
 			const googleUser = req.user;
 
-			// Check if user exists in database
 			let user = await User.findOne({ email: googleUser.email });
 
-			// If user doesn't exist, create new user
 			if (!user) {
 				user = new User({
 					email: googleUser.email,
@@ -40,27 +39,18 @@ router.get(
 					email_verified_at: dayjs().toDate(),
 				});
 				await user.save();
-			} else {
-				// If user exists but doesn't have googleId, update it
-				if (!user.googleId) {
-					user.googleId = googleUser.googleId;
-					await user.save();
-				}
+			} else if (!user.googleId) {
+				user.googleId = googleUser.googleId;
+				await user.save();
 			}
 
-			// Generate JWT token
-			const token = jwt.sign(
-				{ email: user.email, id: user._id },
-				process.env.JWT_SECRET!,
-				{ expiresIn: '7d' }, // Optional: add expiration
-			);
+			const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
 
-			// Redirect to frontend with token
-			// Option 1: Redirect with token in URL (for frontend to capture)
-			res.redirect(`http://localhost:3000/app?token=${token}`);
+			//  Dynamic redirect
+			res.redirect(`${FRONTEND_URL}/app?token=${token}`);
 		} catch (error) {
 			console.error('Google auth error:', error);
-			res.redirect('http://localhost:3000/login?error=auth_failed');
+			res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
 		}
 	},
 );
