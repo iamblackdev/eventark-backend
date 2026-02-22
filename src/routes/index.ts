@@ -10,7 +10,7 @@ import session from 'express-session';
 import passport from 'passport';
 import MongoStore from 'connect-mongo';
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENVR === 'production';
 
 export default function (app: Express) {
 	app.use(cors());
