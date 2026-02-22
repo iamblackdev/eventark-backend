@@ -20,47 +20,41 @@ router.get(
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 router.get(
-	'/google/callback',
+	'/redirect/google',
 	passport.authenticate('google', {
 		failureRedirect: `${FRONTEND_URL}/login`,
-		session: true,
 	}),
-	(req, res) => {
-		// Hand off to app logic
-		res.redirect('/api/auth/redirect/google');
+	async (req: any, res: any) => {
+		console.log(FRONTEND_URL);
+		try {
+			const googleUser = req.user;
+
+			let user = await User.findOne({ email: googleUser.email });
+
+			if (!user) {
+				user = new User({
+					email: googleUser.email,
+					name: googleUser.name,
+					googleId: googleUser.googleId,
+					email_verified: true,
+					email_verified_at: dayjs().toDate(),
+				});
+				await user.save();
+			} else if (!user.googleId) {
+				user.googleId = googleUser.googleId;
+				await user.save();
+			}
+
+			const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
+
+			//  Dynamic redirect
+			res.redirect(`${FRONTEND_URL}/app?token=${token}`);
+		} catch (error) {
+			console.error('Google auth error:', error);
+			res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
+		}
 	},
 );
-
-router.get('/redirect/google', async (req: any, res: any) => {
-	console.log(FRONTEND_URL);
-	try {
-		const googleUser = req.user;
-
-		let user = await User.findOne({ email: googleUser.email });
-
-		if (!user) {
-			user = new User({
-				email: googleUser.email,
-				name: googleUser.name,
-				googleId: googleUser.googleId,
-				email_verified: true,
-				email_verified_at: dayjs().toDate(),
-			});
-			await user.save();
-		} else if (!user.googleId) {
-			user.googleId = googleUser.googleId;
-			await user.save();
-		}
-
-		const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
-
-		//  Dynamic redirect
-		res.redirect(`${FRONTEND_URL}/app?token=${token}`);
-	} catch (error) {
-		console.error('Google auth error:', error);
-		res.redirect(`${FRONTEND_URL}/login?error=auth_failed`);
-	}
-});
 
 // Register
 router.post('/register', async (req: Request, res: any) => {
