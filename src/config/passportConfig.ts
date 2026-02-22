@@ -3,15 +3,13 @@ import passport, { Profile } from 'passport';
 
 const BACKEND_URL = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || '4000'}`;
 
-console.log('====backend', BACKEND_URL);
-
 passport.use(
 	'google',
 	new GoogleStrategy(
 		{
 			clientID: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-			callbackURL: `${BACKEND_URL}/api/auth/redirect/google`,
+			callbackURL: `${BACKEND_URL}/api/auth/google/callback`,
 			scope: ['profile', 'email'],
 		},
 		(issuer: string, profile: Profile, done: (arg0: null, arg1: { googleId: string; email: string | undefined; name: string }) => void) => {
