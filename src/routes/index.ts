@@ -8,20 +8,29 @@ import notification from './notifications';
 import cors from 'cors';
 import session from 'express-session';
 import passport from 'passport';
+import MongoStore from 'connect-mongo';
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 export default function (app: Express) {
 	app.use(cors());
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: true }));
+
 	app.use(
 		session({
-			secret: process.env.SESSION_SECRET!, // Add this to your .env file
+			store: MongoStore.create({
+				mongoUrl: process.env.MONGO_URI!,
+				collectionName: 'sessions',
+				ttl: 24 * 60 * 60,
+			}),
+			secret: process.env.SESSION_SECRET!,
 			resave: false,
 			saveUninitialized: false,
 			cookie: {
-				secure: false, // true in production (HTTPS)
+				secure: isProduction,
 				httpOnly: true,
-				maxAge: 24 * 60 * 60 * 1000, // 24 hours
+				maxAge: 24 * 60 * 60 * 1000,
 				sameSite: 'lax',
 			},
 		}),
