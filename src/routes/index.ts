@@ -35,6 +35,10 @@ export default function (app: Express) {
 		res.send('Hello from Node API Server Updated');
 	});
 
+	app.get('/health', (_, res) => {
+		res.status(200).send('ok');
+	});
+
 	app.use('/api/auth', authRoutes);
 	app.use('/api/event', eventRoutes);
 	app.use('/api', payments);
