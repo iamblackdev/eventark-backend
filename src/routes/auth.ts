@@ -17,7 +17,7 @@ router.get(
 );
 
 // Google OAuth callback
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:33000';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 router.get(
 	'/redirect/google',
@@ -25,6 +25,7 @@ router.get(
 		failureRedirect: `${FRONTEND_URL}/dashboard/login`,
 	}),
 	async (req: any, res: any) => {
+		console.log(FRONTEND_URL);
 		try {
 			const googleUser = req.user;
 
