@@ -26,7 +26,6 @@ router.get(
 		failureRedirect: `${FRONTEND_URL}/login`,
 	}),
 	async (req: any, res: any) => {
-		console.log(FRONTEND_URL);
 		try {
 			const googleUser = req.user;
 
